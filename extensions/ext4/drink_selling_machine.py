@@ -17,3 +17,11 @@ class DrinkSellingMachineWithStats(DrinkSellingMachine):
         if res:
             self._stats['drink_stats'][ordered_position.name] += 1
         return res
+
+    def print_statistics(self):
+        print('Sold drinks:')
+        for i in self._stats['drink_stats']:
+            s = self._stats['drink_stats'][i]
+            print(f'Drink name: {i}, amount of sold positions: {s}')
+        k = self._stats['client_stats']
+        print(f'Amount of clients: {k}')
