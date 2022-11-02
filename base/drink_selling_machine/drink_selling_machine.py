@@ -1,20 +1,24 @@
-import asyncio
 import copy
 import datetime
-import time
 
-from core.tools import get_class
-from .config.settings import RECEIPTS, STORAGES, COMPONENTS, MACHINE
-from core.interfaces import IOrderable
-from .ingredients_part.ingredients import CookedDrink
+from .machine_elements.components import IngredientOperator
+from .config.settings import RECEIPTS, COMPONENTS, MACHINE
+from base.core.interfaces import IOrderable
+from .goods.drinks import CookedDrink
+from .machine_elements.storages import PreReadyGoodsStorage, IngredientStorage
 
 
 class DrinkSellingMachine(IOrderable):
+    __component_class = IngredientOperator
+    __storage_classes = {'Ingredients storage': IngredientStorage, 'Pre-ready goods fridge': PreReadyGoodsStorage}
+
     def __init__(self, *args, **kwargs):
+        if 'component_cls' in kwargs:
+            DrinkSellingMachine.__component_class = kwargs.pop('component_cls')
         self.__components = {
-            name: get_class(COMPONENTS[name]['class'])(name=name, ingredients=COMPONENTS[name]['ingredients']) for name
+            name: DrinkSellingMachine.__component_class(name=name, ingredients=COMPONENTS[name]['ingredients']) for name
             in COMPONENTS}
-        self.__storages = {name: get_class(STORAGES[name]['class'])(name=name) for name in STORAGES}
+        self.__storages = {name: DrinkSellingMachine.__storage_classes[name](name=name) for name in DrinkSellingMachine.__storage_classes}
         self.__receipts = copy.deepcopy(RECEIPTS)
         self.__work_start = datetime.datetime.now()
         self.__work_delta = datetime.timedelta(seconds=MACHINE['work_delta'])
@@ -42,8 +46,9 @@ class DrinkSellingMachine(IOrderable):
                 break
             for stage in required_components:
                 self.__components[required_components[stage]].pass_receipt_ingredient(required_drink, stage)
-            loop = asyncio.get_event_loop()
-            result = loop.run_until_complete(self._trigger_operations(required_components))
+            # loop = asyncio.get_event_loop()
+            # result = loop.run_until_complete(self._trigger_operations(required_components))
+            result = self._trigger_operations(required_components)
             result_list = dict(result)
             vals_to_del = []
             for ingr in result_list:
@@ -67,11 +72,11 @@ class DrinkSellingMachine(IOrderable):
         s = self.__storages['Ingredients storage'].get_receipt_ingredients(prev_extraction_info, receipt)
         return s
 
-    async def _trigger_operations(self, req_comps):
-        my_list = []
-        for comp in req_comps:
-            my_list.append(asyncio.create_task(self.__components[req_comps[comp]].operate_ingredient()))
-        result = await asyncio.gather(*my_list, return_exceptions=False)
+    def _trigger_operations(self, req_comps) -> list:
+        result = [self.__components[req_comps[comp]].operate_ingredient() for comp in req_comps]
+        # for comp in req_comps:
+        #     my_list.append(asyncio.create_task(self.__components[req_comps[comp]].operate_ingredient()))
+        # result = await asyncio.gather(*my_list, return_exceptions=False)
         return result
 
     def _execute_order(self, required_drink):

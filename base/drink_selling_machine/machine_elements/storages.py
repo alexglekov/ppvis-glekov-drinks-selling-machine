@@ -1,6 +1,7 @@
-from core.tools import get_class
-from drink_selling_machine.config.settings import PRE_READY_GOODS, INGREDIENTS
-from drink_selling_machine.ingredients_part.ingredients import PreReadyGood
+from base.core.tools import get_class
+from base.drink_selling_machine.config.settings import PRE_READY_GOODS, INGREDIENTS
+from base.drink_selling_machine.goods.drinks import PreReadyDrink
+from base.drink_selling_machine.goods.ingredients import Ingredient
 
 
 class Storage:
@@ -26,7 +27,7 @@ class Storage:
 
 
 class IngredientStorage(Storage):
-    __element_class = get_class(INGREDIENTS['class'])
+    __element_class = Ingredient
 
     def __init__(self, **kwargs):
         super(IngredientStorage, self).__init__(**kwargs)
@@ -51,7 +52,7 @@ class IngredientStorage(Storage):
 
 
 class PreReadyGoodsStorage(Storage):
-    __element_class = get_class(PRE_READY_GOODS['class'])
+    __element_class = PreReadyDrink
 
     def __init__(self, **kwargs):
         super(PreReadyGoodsStorage, self).__init__(**kwargs)
@@ -61,6 +62,6 @@ class PreReadyGoodsStorage(Storage):
     def get_element(self, name, amount):
         if self._stored_items[name].amount >= amount:
             self._stored_items[name].amount -= amount
-            return PreReadyGood(name=name)
+            return PreReadyDrink(name=name)
         else:
             return False

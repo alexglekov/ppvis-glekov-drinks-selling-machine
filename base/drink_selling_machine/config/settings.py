@@ -13,8 +13,7 @@ INGREDIENTS = {
                 {
                     'amount': 200,
                 },
-        },
-    'class': ('drink_selling_machine.ingredients_part.ingredients', 'Ingredient')
+        }
 }
 PRE_READY_GOODS = {
     'list': {
@@ -27,36 +26,29 @@ PRE_READY_GOODS = {
         'sprite': {
             'amount': 10
         }
-    },
-    'class': ('drink_selling_machine.ingredients_part.ingredients', 'PreReadyGood')
+    }
 }
 STORAGES = {
         'Ingredients storage': {
-            'contents': INGREDIENTS['list'].keys(),
-            'class': ('drink_selling_machine.components_part.storages', 'IngredientStorage')
+            'contents': INGREDIENTS['list'].keys()
         },
         'Pre-ready goods fridge': {
-            'contents': PRE_READY_GOODS['list'].keys(),
-            'class': ('drink_selling_machine.components_part.storages', 'PreReadyGoodsStorage')
+            'contents': PRE_READY_GOODS['list'].keys()
         },
 }
 
 COMPONENTS = {
         'Cappuccinator': {
-            'ingredients': ['milk'],
-            'class': ('drink_selling_machine.components_part.components', 'IngredientOperator')
+            'ingredients': ['milk']
         },
         'Bean grinder': {
-            'ingredients': ['coffee_beans'],
-            'class': ('drink_selling_machine.components_part.components', 'IngredientOperator')
+            'ingredients': ['coffee_beans']
         },
         'Dozator': {
-            'ingredients': ['syrup'],
-            'class': ('drink_selling_machine.components_part.components', 'IngredientOperator')
+            'ingredients': ['syrup']
         },
         'Boiler': {
-            'ingredients': ['milk'],
-            'class': ('drink_selling_machine.components_part.components', 'IngredientOperator')
+            'ingredients': ['milk']
         }
 }
 
@@ -104,13 +96,11 @@ RECEIPTS = {
     }
 }
 CLIENT = {
-    'class': ('client.client', 'Client'),
-    'possible_wait_time': 20
+    'possible_wait_time': 30
 }
 
 MACHINE = {
-    'class': ('drink_selling_machine.drink_selling_machine', 'DrinkSellingMachine'),
-    'work_delta': 10
+    'work_delta': 60
 }
 
 CLIENT_GENERATION_DELTA = 5
