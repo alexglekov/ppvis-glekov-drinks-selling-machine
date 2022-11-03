@@ -1,7 +1,7 @@
 import datetime
 import random
 
-from base.drink_selling_machine.config.settings import CLIENT
+from base.config.settings import CLIENT
 from base.drink_selling_machine.drink_selling_machine import IOrderable
 
 
@@ -11,18 +11,6 @@ class Client:
         self._chosen_drink = None
         self._received_drink = None
         self._order_time = None
-
-    def _pick_drink(self, machine: IOrderable):
-        menu = machine.get_menu()
-        print('Client is picking drink')
-        self._chosen_drink = random.choice(menu)
-        print(f'Chosen drink: {self._chosen_drink}')
-        if machine.is_position_avaliable(self._chosen_drink):
-            print("Chosen drink is available, proceeding to the next step")
-            return True
-        else:
-            print('Chosen drink is unavailable')
-            return False
 
     def order_drink(self, machine):
         pick_try = self._pick_drink(machine)
@@ -45,10 +33,22 @@ class Client:
             print('Drink chosen by client is unavailable, client is leaving')
             return False
 
-    def _order_drink(self, drink_selling_machine: IOrderable):
-        order_try = drink_selling_machine.make_order(self._chosen_drink)
-        return order_try
-
     @property
     def received_drink(self):
         return self._received_drink
+
+    def _pick_drink(self, machine: IOrderable):
+        menu = machine.get_menu()
+        print('Client is picking drink')
+        self._chosen_drink = random.choice(menu)
+        print(f'Chosen drink: {self._chosen_drink}')
+        if machine.is_position_avaliable(self._chosen_drink):
+            print("Chosen drink is available, proceeding to the next step")
+            return True
+        else:
+            print('Chosen drink is unavailable')
+            return False
+
+    def _order_drink(self, drink_selling_machine: IOrderable):
+        order_try = drink_selling_machine.make_order(self._chosen_drink)
+        return order_try

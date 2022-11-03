@@ -1,5 +1,4 @@
-from base.core.tools import get_class
-from base.drink_selling_machine.config.settings import PRE_READY_GOODS, INGREDIENTS
+from base.config.settings import PRE_READY_GOODS, INGREDIENTS
 from base.drink_selling_machine.goods.drinks import PreReadyDrink
 from base.drink_selling_machine.goods.ingredients import Ingredient
 

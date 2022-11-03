@@ -2,36 +2,52 @@ import copy
 import datetime
 
 from .machine_elements.components import IngredientOperator
-from .config.settings import RECEIPTS, COMPONENTS, MACHINE
+from base.config.settings import RECEIPTS, COMPONENTS, MACHINE
 from base.core.interfaces import IOrderable
 from .goods.drinks import CookedDrink
 from .machine_elements.storages import PreReadyGoodsStorage, IngredientStorage
 
 
 class DrinkSellingMachine(IOrderable):
-    __component_class = IngredientOperator
-    __storage_classes = {'Ingredients storage': IngredientStorage, 'Pre-ready goods fridge': PreReadyGoodsStorage}
+    # __storage_classes = {'Ingredients storage': IngredientStorage, 'Pre-ready goods fridge': PreReadyGoodsStorage}
 
-    def __init__(self, *args, **kwargs):
-        if 'component_cls' in kwargs:
-            DrinkSellingMachine.__component_class = kwargs.pop('component_cls')
+    def __init__(self, **kwargs):
+        self._component_class = kwargs.pop('component_cls', IngredientOperator)
         self.__components = {
-            name: DrinkSellingMachine.__component_class(name=name, ingredients=COMPONENTS[name]['ingredients']) for name
+            name: self._component_class(name=name, ingredients=COMPONENTS[name]['ingredients']) for name
             in COMPONENTS}
-        self.__storages = {name: DrinkSellingMachine.__storage_classes[name](name=name) for name in DrinkSellingMachine.__storage_classes}
+        self.__storages = {'Ingredients storage': IngredientStorage(name='Ingredients storage'), 'Pre-ready goods '
+                                                                                                 'fridge':
+            PreReadyGoodsStorage(name='Pre-ready goods fridge')}
+        # self.__storages = {name: DrinkSellingMachine.__storage_classes[name](name=name) for name in DrinkSellingMachine.__storage_classes}
         self.__receipts = copy.deepcopy(RECEIPTS)
         self.__work_start = datetime.datetime.now()
         self.__work_delta = datetime.timedelta(seconds=MACHINE['work_delta'])
-
-    def _get_receipt(self, required_drink, *args, **kwargs):
-        receipt = {required_drink: copy.deepcopy(self.__receipts[required_drink])}
-        return receipt
 
     def is_available(self):
         if datetime.datetime.now() > (self.__work_start + self.__work_delta):
             return False
         else:
             return True
+
+    def get_menu(self):
+        return list(
+            list(self.__receipts.keys()) + list(self.__storages['Pre-ready goods fridge'].get_current_state().keys()))
+
+    def make_order(self, ordered_position):
+        res = self._execute_order(ordered_position)
+        if res is not False:
+            return res
+        else:
+            return False
+
+    def is_position_avaliable(self, position):
+        res = self._check_order_possibility(position)
+        return res
+
+    def _get_receipt(self, required_drink, *args, **kwargs):
+        receipt = {required_drink: copy.deepcopy(self.__receipts[required_drink])}
+        return receipt
 
     def _execute_receipt(self, receipt, required_drink, *args, **kwargs):
         # storage = self.__storages['Ingredients storage']
@@ -91,17 +107,6 @@ class DrinkSellingMachine(IOrderable):
         else:
             return False
 
-    def make_order(self, ordered_position):
-        res = self._execute_order(ordered_position)
-        if res is not False:
-            return res
-        else:
-            return False
-
-    def is_position_avaliable(self, position):
-        res = self._check_order_possibility(position)
-        return res
-
     def _check_order_possibility(self, order):
         if order in self.__storages['Pre-ready goods fridge']:
             if self.__storages['Pre-ready goods fridge'].check_stored_item(order, 1):
@@ -122,6 +127,3 @@ class DrinkSellingMachine(IOrderable):
     def _get_pre_ready_good(self, name):
         result = self.__storages['Pre-ready goods fridge'].get_element(name, 1)
         return result
-
-    def get_menu(self):
-        return list(list(self.__receipts.keys()) + list(self.__storages['Pre-ready goods fridge'].get_current_state().keys()))
