@@ -2,8 +2,8 @@ from base.drink_selling_machine.drink_selling_machine import DrinkSellingMachine
 
 
 class DrinkSellingMachineWithStats(DrinkSellingMachine):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, component_cls=None):
+        super().__init__(component_cls=component_cls)
         self._stats = {'drink_stats': {drink_name: 0 for drink_name in super().get_menu()},
                        'client_stats': 0}
 

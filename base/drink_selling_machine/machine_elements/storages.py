@@ -4,8 +4,8 @@ from base.drink_selling_machine.goods.ingredients import Ingredient
 
 
 class Storage:
-    def __init__(self, **kwargs):
-        self.__name = kwargs['name']
+    def __init__(self, name=''):
+        self.__name = name
         self._stored_items = None
 
     def check_stored_item(self, name: str, amount):
@@ -26,8 +26,8 @@ class Storage:
 
 
 class IngredientStorage(Storage):
-    def __init__(self, **kwargs):
-        super(IngredientStorage, self).__init__(**kwargs)
+    def __init__(self, name=''):
+        super(IngredientStorage, self).__init__(name=name)
         self._stored_items = {name: Ingredient(name=name, **INGREDIENTS['list'][name])
                               for name in INGREDIENTS['list']}
 
@@ -49,8 +49,8 @@ class IngredientStorage(Storage):
 
 
 class PreReadyGoodsStorage(Storage):
-    def __init__(self, **kwargs):
-        super(PreReadyGoodsStorage, self).__init__(**kwargs)
+    def __init__(self, name=''):
+        super(PreReadyGoodsStorage, self).__init__(name=name)
         self._stored_items = {name: PreReadyDrink(name=name, **PRE_READY_GOODS['list'][name])
                               for name in PRE_READY_GOODS['list']}
 

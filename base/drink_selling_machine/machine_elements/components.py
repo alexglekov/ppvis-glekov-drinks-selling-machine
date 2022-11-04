@@ -4,9 +4,9 @@ from base.config.settings import RECEIPTS
 
 
 class IngredientOperator:
-    def __init__(self, **kwargs):
-        self.__name = kwargs.pop('name')
-        self.__binded_ingredients = kwargs.pop('ingredients')
+    def __init__(self, name='', ingredients=None):
+        self.__name = name
+        self.__binded_ingredients = ingredients
         self._current_receipt = None
         self._current_ingredient = None
 
