@@ -1,7 +1,7 @@
 import random
 
 from base.client.client import Client
-from base.core.interfaces import IOrderable
+from base.abstract.interfaces import IOrderable
 
 
 class ClientWithPickCount(Client):

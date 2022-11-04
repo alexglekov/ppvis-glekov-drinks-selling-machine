@@ -6,7 +6,7 @@ from base.drink_selling_machine.drink_selling_machine import IOrderable
 
 
 class Client:
-    def __init__(self, **kwargs):
+    def __init__(self):
         self._possible_wait_time = datetime.timedelta(seconds=CLIENT['possible_wait_time'])
         self._chosen_drink = None
         self._received_drink = None

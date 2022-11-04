@@ -26,11 +26,9 @@ class Storage:
 
 
 class IngredientStorage(Storage):
-    __element_class = Ingredient
-
     def __init__(self, **kwargs):
         super(IngredientStorage, self).__init__(**kwargs)
-        self._stored_items = {name: IngredientStorage.__element_class(name=name, **INGREDIENTS['list'][name])
+        self._stored_items = {name: Ingredient(name=name, **INGREDIENTS['list'][name])
                               for name in INGREDIENTS['list']}
 
     def get_receipt_ingredients(self, ingredients, receipt):
@@ -51,11 +49,9 @@ class IngredientStorage(Storage):
 
 
 class PreReadyGoodsStorage(Storage):
-    __element_class = PreReadyDrink
-
     def __init__(self, **kwargs):
         super(PreReadyGoodsStorage, self).__init__(**kwargs)
-        self._stored_items = {name: PreReadyGoodsStorage.__element_class(name=name, **PRE_READY_GOODS['list'][name])
+        self._stored_items = {name: PreReadyDrink(name=name, **PRE_READY_GOODS['list'][name])
                               for name in PRE_READY_GOODS['list']}
 
     def get_element(self, name, amount):

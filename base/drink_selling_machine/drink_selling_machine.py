@@ -3,23 +3,21 @@ import datetime
 
 from .machine_elements.components import IngredientOperator
 from base.config.settings import RECEIPTS, COMPONENTS, MACHINE
-from base.core.interfaces import IOrderable
+from base.abstract.interfaces import IOrderable
 from .goods.drinks import CookedDrink
 from .machine_elements.storages import PreReadyGoodsStorage, IngredientStorage
 
 
 class DrinkSellingMachine(IOrderable):
-    # __storage_classes = {'Ingredients storage': IngredientStorage, 'Pre-ready goods fridge': PreReadyGoodsStorage}
-
-    def __init__(self, **kwargs):
-        self._component_class = kwargs.pop('component_cls', IngredientOperator)
-        self.__components = {
-            name: self._component_class(name=name, ingredients=COMPONENTS[name]['ingredients']) for name
-            in COMPONENTS}
-        self.__storages = {'Ingredients storage': IngredientStorage(name='Ingredients storage'), 'Pre-ready goods '
-                                                                                                 'fridge':
-            PreReadyGoodsStorage(name='Pre-ready goods fridge')}
-        # self.__storages = {name: DrinkSellingMachine.__storage_classes[name](name=name) for name in DrinkSellingMachine.__storage_classes}
+    def __init__(self, component_cls=None):
+        if component_cls:
+            self._components = {name: component_cls(name=name, ingredients=COMPONENTS[name]['ingredients'])
+                            for name in COMPONENTS}
+        else:
+            self._components = {name: IngredientOperator(name=name, ingredients=COMPONENTS[name]['ingredients'])
+                                for name in COMPONENTS}
+        self._storages = {'Ingredients storage': IngredientStorage(name='Ingredients storage'),
+                           'Pre-ready goods fridge': PreReadyGoodsStorage(name='Pre-ready goods fridge')}
         self.__receipts = copy.deepcopy(RECEIPTS)
         self.__work_start = datetime.datetime.now()
         self.__work_delta = datetime.timedelta(seconds=MACHINE['work_delta'])
@@ -32,7 +30,7 @@ class DrinkSellingMachine(IOrderable):
 
     def get_menu(self):
         return list(
-            list(self.__receipts.keys()) + list(self.__storages['Pre-ready goods fridge'].get_current_state().keys()))
+            list(self.__receipts.keys()) + list(self._storages['Pre-ready goods fridge'].get_current_state().keys()))
 
     def make_order(self, ordered_position):
         res = self._execute_order(ordered_position)
@@ -45,12 +43,12 @@ class DrinkSellingMachine(IOrderable):
         res = self._check_order_possibility(position)
         return res
 
-    def _get_receipt(self, required_drink, *args, **kwargs):
+    def _get_receipt(self, required_drink):
         receipt = {required_drink: copy.deepcopy(self.__receipts[required_drink])}
         return receipt
 
-    def _execute_receipt(self, receipt, required_drink, *args, **kwargs):
-        # storage = self.__storages['Ingredients storage']
+    def _execute_receipt(self, receipt, required_drink):
+        # storage = self._storages['Ingredients storage']
         result_list = {stage: False for stage in receipt[required_drink]}
         required_components = {stage: receipt[required_drink][stage]['component'] for stage in
                                receipt[required_drink]}
@@ -61,7 +59,7 @@ class DrinkSellingMachine(IOrderable):
             if ingr_check is False:
                 break
             for stage in required_components:
-                self.__components[required_components[stage]].pass_receipt_ingredient(required_drink, stage)
+                self._components[required_components[stage]].pass_receipt_ingredient(required_drink, stage)
             # loop = asyncio.get_event_loop()
             # result = loop.run_until_complete(self._trigger_operations(required_components))
             result = self._trigger_operations(required_components)
@@ -85,13 +83,13 @@ class DrinkSellingMachine(IOrderable):
                 del prev_extraction_info[stage]
             else:
                 pass
-        s = self.__storages['Ingredients storage'].get_receipt_ingredients(prev_extraction_info, receipt)
+        s = self._storages['Ingredients storage'].get_receipt_ingredients(prev_extraction_info, receipt)
         return s
 
     def _trigger_operations(self, req_comps) -> list:
-        result = [self.__components[req_comps[comp]].operate_ingredient() for comp in req_comps]
+        result = [self._components[req_comps[comp]].operate_ingredient() for comp in req_comps]
         # for comp in req_comps:
-        #     my_list.append(asyncio.create_task(self.__components[req_comps[comp]].operate_ingredient()))
+        #     my_list.append(asyncio.create_task(self._components[req_comps[comp]].operate_ingredient()))
         # result = await asyncio.gather(*my_list, return_exceptions=False)
         return result
 
@@ -107,14 +105,14 @@ class DrinkSellingMachine(IOrderable):
         else:
             return False
 
-    def _check_order_possibility(self, order):
-        if order in self.__storages['Pre-ready goods fridge']:
-            if self.__storages['Pre-ready goods fridge'].check_stored_item(order, 1):
+    def _check_order_possibility(self, order) -> bool:
+        if order in self._storages['Pre-ready goods fridge']:
+            if self._storages['Pre-ready goods fridge'].check_stored_item(order, 1):
                 return True
             else:
                 return False
         elif order in self.__receipts:
-            ingred_cur_state = self.__storages['Ingredients storage'].get_current_state()
+            ingred_cur_state = self._storages['Ingredients storage'].get_current_state()
             for ingred in self.__receipts[order]:
                 if self.__receipts[order][ingred]['amount'] > ingred_cur_state[ingred]:
                     return False
@@ -125,5 +123,5 @@ class DrinkSellingMachine(IOrderable):
             return False
 
     def _get_pre_ready_good(self, name):
-        result = self.__storages['Pre-ready goods fridge'].get_element(name, 1)
+        result = self._storages['Pre-ready goods fridge'].get_element(name, 1)
         return result
